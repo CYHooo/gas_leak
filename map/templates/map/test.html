@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3.js 等高线图示例</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+        html,body {
+            height: 100%;
+            margin: 10;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <svg id="contour"></svg>
+
+    <script>
+        const data = {{ volcano_data|safe }}
+        const n = data.width;
+        const m = data.height;
+        const width = 600;
+        const height = Math.round(m / n * width);
+        const path = d3.geoPath().projection(d3.geoIdentity().scale(width / n));
+        const contours = d3.contours().size([n, m]);
+        const color = d3.scaleSequential(d3.interpolateTurbo).domain(d3.extent(data.values)).nice();
+        const svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto;");
+
+        svg.append("g")
+            .attr("stroke", "black")
+            .selectAll()
+            .data(color.ticks(20))
+            .join("path")
+            .attr("d", d => path(contours.contour(data.values, d)))
+            .attr("fill", color);
+
+    </script>
+</body>
+</html>
